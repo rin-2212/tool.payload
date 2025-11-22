@@ -48,10 +48,10 @@
                 <!-- Vector Khởi tạo (IV) -->
                 <div>
                     <label for="iv" class="block text-sm font-medium text-gray-700 mb-1">
-                        Vector Khởi tạo (15 ký tự - IV)
+                        Vector Khởi tạo (16 ký tự - IV)
                     </label>
-                    <input type="text" id="iv" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150" value="123456789012345">
-                    <p id="iv-error" class="text-xs text-red-500 mt-1 hidden">IV phải có đúng 15 ký tự.</p>
+                    <input type="text" id="iv" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150" value="1234567890123456">
+                    <p id="iv-error" class="text-xs text-red-500 mt-1 hidden">IV phải có đúng 16 ký tự.</p>
                 </div>
             </div>
 
@@ -118,13 +118,13 @@
                 keyError.classList.remove('hidden');
                 isValid = false;
             }
-            if (ivString.length !== 15) { // Đã sửa từ 16 sang 15
+            if (ivString.length !== 16) { // Đã khôi phục thành 16
                 ivError.classList.remove('hidden');
                 isValid = false;
             }
 
             if (!isValid) {
-                outputTextarea.value = "Lỗi: Vui lòng kiểm tra độ dài của Key (32 ký tự) và IV (15 ký tự)."; // Đã sửa thông báo
+                outputTextarea.value = "Lỗi: Vui lòng kiểm tra độ dài của Key (32 ký tự) và IV (16 ký tự)."; // Đã khôi phục thông báo
                 copyBtn.disabled = true;
                 return;
             }
@@ -135,7 +135,6 @@
                 const ivWordArray = CryptoJS.enc.Utf8.parse(ivString);
 
                 // 3. Mã hóa AES-256-CBC với PKCS7 padding
-                // Lưu ý: CryptoJS vẫn sẽ thực hiện mã hóa nhưng độ dài IV 15 byte là phi tiêu chuẩn.
                 const encrypted = CryptoJS.AES.encrypt(plaintext, keyWordArray, {
                     iv: ivWordArray,
                     mode: CryptoJS.mode.CBC,
