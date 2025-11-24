@@ -4,84 +4,71 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Công cụ tạo Payload AES-256-CBC</title>
-    <!-- Tải Tailwind CSS cho giao diện đẹp -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Tải thư viện CryptoJS để thực hiện mã hóa AES -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
     <style>
-        /* Sử dụng font Inter cho thẩm mỹ */
         body { font-family: 'Inter', sans-serif; }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen p-4 sm:p-8">
     <div class="max-w-4xl mx-auto bg-white shadow-2xl rounded-xl p-6 md:p-10 border border-gray-100">
 
-        <!-- Tiêu đề -->
-        <h1 class="3xl font-extrabold text-gray-900 mb-2 border-b pb-2">
+        <h1 class="text-3xl font-extrabold text-gray-900 mb-2 border-b pb-2">
             Công cụ tạo Payload AES-256-CBC
         </h1>
         <p class="text-sm text-gray-500 mb-8">
-            Mã hóa chuỗi truy vấn (query string) theo chuẩn AES-256-CBC với PKCS7 padding, sau đó chuyển đổi sang Base64 URL-safe (RFC 4648).
+            Mã hóa chuỗi truy vấn (query string) theo chuẩn AES-256-CBC với PKCS7 padding, sau đó chuyển đổi sang Base64 URL-safe.
         </p>
 
-        <!-- Form nhập liệu -->
         <div class="space-y-6">
             
-            <!-- Chuỗi truy vấn Plaintext -->
             <div>
                 <label for="plaintext" class="block text-sm font-medium text-gray-700 mb-1">
-                    Chuỗi truy vấn Plaintext (Ví dụ: uid=user_12345&product_id=package_001)
+                    Chuỗi truy vấn Plaintext
                 </label>
                 <input type="text" id="plaintext" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150" value="uid=user_12345&product_id=package_001">
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Khóa bí mật (Key) -->
                 <div>
                     <label for="key" class="block text-sm font-medium text-gray-700 mb-1">
                         Khóa bí mật (32 ký tự cho AES-256)
                     </label>
-                    <input type="text" id="key" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150" value="01234567890123456789012345678901">
+                    <input type="text" id="key" placeholder="Nhập khóa bí mật..." class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150">
                     <p id="key-error" class="text-xs text-red-500 mt-1 hidden">Khóa phải có đúng 32 ký tự.</p>
                 </div>
 
-                <!-- Vector Khởi tạo (IV) -->
                 <div>
                     <label for="iv" class="block text-sm font-medium text-gray-700 mb-1">
                         Vector Khởi tạo (16 ký tự - IV)
                     </label>
-                    <input type="text" id="iv" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150" value="1234567890123456">
+                    <input type="text" id="iv" placeholder="Nhập IV..." class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150">
                     <p id="iv-error" class="text-xs text-red-500 mt-1 hidden">IV phải có đúng 16 ký tự.</p>
                 </div>
             </div>
 
-            <!-- Nút Tạo Payload -->
             <button id="encrypt-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg transform transition duration-200 hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-blue-500/50">
                 Tạo Payload Mã hóa
             </button>
         </div>
 
-        <!-- Kết quả -->
         <div class="mt-10 pt-6 border-t border-gray-200">
             <h2 class="text-xl font-semibold text-gray-900 mb-4">
                 Payload mã hóa Base64 URL-safe
             </h2>
             <div class="relative">
-                <textarea id="output" readonly rows="4" class="w-full p-4 pr-16 bg-gray-100 border border-gray-300 rounded-lg font-mono text-gray-700 resize-none" placeholder="Payload sẽ hiển thị ở đây..."></textarea>
+                <textarea id="output" readonly rows="4" class="w-full p-4 pr-16 bg-gray-100 border border-gray-300 rounded-lg font-mono text-gray-700 resize-none" placeholder="Kết quả sẽ hiển thị ở đây sau khi bạn nhập đủ thông tin và nhấn nút Tạo..."></textarea>
                 
-                <!-- Nút Copy -->
                 <button id="copy-btn" class="absolute top-2 right-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-3 rounded-md transition duration-150 shadow-md disabled:bg-gray-400" disabled>
                     <svg class="w-5 h-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-1M8 5a2 2 0 002 2h4a2 2 0 002-2M8 5a2 2 0 012-2h4a2 2 0 012 2"></path></svg>
                     <span id="copy-text">Sao chép</span>
                 </button>
             </div>
-            
-            <p id="copy-error-message" class="text-sm text-red-500 mt-2 hidden">Lỗi: Không thể sao chép tự động. Vui lòng sao chép thủ công.</p>
+            <p id="copy-error-message" class="text-sm text-red-500 mt-2 hidden">Lỗi: Không thể sao chép tự động.</p>
         </div>
     </div>
 
     <script>
-        // Lấy các phần tử DOM
         const plaintextInput = document.getElementById('plaintext');
         const keyInput = document.getElementById('key');
         const ivInput = document.getElementById('iv');
@@ -93,111 +80,94 @@
         const ivError = document.getElementById('iv-error');
         const copyErrorMessage = document.getElementById('copy-error-message');
 
-        // Hàm chuyển đổi Base64 chuẩn sang Base64 URL-safe (RFC 4648)
         function base64ToUrlSafe(base64) {
-            return base64
-                .replace(/\+/g, '-') // Thay '+' bằng '-'
-                .replace(/\//g, '_') // Thay '/' bằng '_'
-                .replace(/=+$/, ''); // Loại bỏ ký tự padding '=' ở cuối
+            return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
         }
 
-        // Hàm chính để mã hóa
         function encryptAndEncode() {
             const plaintext = plaintextInput.value;
             const keyString = keyInput.value;
             const ivString = ivInput.value;
             
-            // Ẩn thông báo lỗi
             keyError.classList.add('hidden');
             ivError.classList.add('hidden');
-            copyErrorMessage.classList.add('hidden'); // Ẩn lỗi copy
+            copyErrorMessage.classList.add('hidden');
 
-            // 1. Kiểm tra độ dài Key và IV
+            // Nếu chưa nhập gì thì không làm gì cả (để tránh báo lỗi đỏ lòm khi vừa vào trang)
+            if (!keyString && !ivString) {
+                 outputTextarea.value = "Vui lòng nhập Key và IV để bắt đầu.";
+                 return;
+            }
+
             let isValid = true;
             if (keyString.length !== 32) {
                 keyError.classList.remove('hidden');
                 isValid = false;
             }
-            if (ivString.length !== 16) { // Đã khôi phục thành 16
+            if (ivString.length !== 16) {
                 ivError.classList.remove('hidden');
                 isValid = false;
             }
 
             if (!isValid) {
-                outputTextarea.value = "Lỗi: Vui lòng kiểm tra độ dài của Key (32 ký tự) và IV (16 ký tự)."; // Đã khôi phục thông báo
+                outputTextarea.value = "Lỗi: Vui lòng kiểm tra độ dài của Key (32 ký tự) và IV (16 ký tự).";
                 copyBtn.disabled = true;
                 return;
             }
 
             try {
-                // 2. Chuyển đổi Key và IV từ chuỗi UTF-8 sang WordArray
                 const keyWordArray = CryptoJS.enc.Utf8.parse(keyString);
                 const ivWordArray = CryptoJS.enc.Utf8.parse(ivString);
 
-                // 3. Mã hóa AES-256-CBC với PKCS7 padding
                 const encrypted = CryptoJS.AES.encrypt(plaintext, keyWordArray, {
                     iv: ivWordArray,
                     mode: CryptoJS.mode.CBC,
                     padding: CryptoJS.pad.Pkcs7
                 });
 
-                // Lấy chuỗi Base64 tiêu chuẩn của ciphertext
                 const base64Standard = encrypted.ciphertext.toString(CryptoJS.enc.Base64);
-
-                // 4. Chuyển đổi sang Base64 URL-safe
                 const base64UrlSafe = base64ToUrlSafe(base64Standard);
 
-                // 5. Hiển thị kết quả
                 outputTextarea.value = base64UrlSafe;
                 copyBtn.disabled = false;
 
             } catch (error) {
                 console.error("Lỗi mã hóa:", error);
-                outputTextarea.value = "Đã xảy ra lỗi trong quá trình mã hóa. Vui lòng kiểm tra đầu vào.";
+                outputTextarea.value = "Đã xảy ra lỗi trong quá trình mã hóa.";
                 copyBtn.disabled = true;
             }
         }
 
-        // Xử lý sự kiện khi nhấn nút "Tạo Payload"
         encryptBtn.addEventListener('click', encryptAndEncode);
 
-        // Xử lý sự kiện sao chép vào clipboard
         copyBtn.addEventListener('click', () => {
             const payload = outputTextarea.value;
             if (payload) {
-                // Sao chép sử dụng document.execCommand('copy') vì navigator.clipboard có thể bị hạn chế trong iframe
                 const tempTextArea = document.createElement('textarea');
                 tempTextArea.value = payload;
                 document.body.appendChild(tempTextArea);
                 tempTextArea.select();
                 try {
                     document.execCommand('copy');
-                    
-                    // Hiển thị thông báo "Đã sao chép!"
                     const originalText = copyTextSpan.textContent;
                     copyTextSpan.textContent = 'Đã sao chép!';
                     copyBtn.classList.remove('bg-green-500', 'hover:bg-green-600');
-                    copyBtn.classList.add('bg-blue-500', 'hover:bg-blue-500'); // Đổi màu tạm thời
-                    copyErrorMessage.classList.add('hidden'); // Ẩn lỗi copy nếu thành công
-
+                    copyBtn.classList.add('bg-blue-500', 'hover:bg-blue-500');
                     setTimeout(() => {
                         copyTextSpan.textContent = originalText;
                         copyBtn.classList.remove('bg-blue-500', 'hover:bg-blue-500');
                         copyBtn.classList.add('bg-green-500', 'hover:bg-green-600');
                     }, 1500);
-
                 } catch (err) {
-                    console.error('Không thể sao chép tự động: ', err);
-                    copyErrorMessage.classList.remove('hidden'); // Hiển thị lỗi copy
+                    copyErrorMessage.classList.remove('hidden');
                 } finally {
                     document.body.removeChild(tempTextArea);
                 }
             }
         });
 
-        // Tự động mã hóa khi tải trang lần đầu (với dữ liệu mẫu)
-        window.onload = encryptAndEncode;
-
+        // ĐÃ SỬA: Xóa dòng window.onload để không tự động chạy khi Key/IV trống
+        // window.onload = encryptAndEncode; 
     </script>
 </body>
 </html>
