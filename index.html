@@ -2,121 +2,177 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>AES-256-CBC URL-Safe Generator</title>
+    <title>AES-256-CBC Dual Panel Pro</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
-        :root { --primary: #2563eb; --bg: #f8fafc; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); padding: 20px; color: #1e293b; }
-        .card { max-width: 850px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-        h2 { text-align: center; margin-top: 0; color: #0f172a; }
-        .field { margin-bottom: 18px; }
-        label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; }
-        input, textarea { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-family: monospace; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .output-box { background: #f1f5f9; padding: 20px; border-radius: 10px; margin-top: 25px; }
-        .result-area { background: white; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; min-height: 40px; word-break: break-all; margin-bottom: 10px; font-family: monospace; font-size: 0.9rem; }
-        .btn-main { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 15px; font-size: 1rem; }
-        .btn-copy { background: #22c55e; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
-        .toast { color: #22c55e; font-size: 0.8rem; font-weight: bold; display: none; margin-left: 10px; }
+        :root { --primary: #2563eb; --accent: #ef4444; --bg: #f1f5f9; --panel: #ffffff; --success: #10b981; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); margin: 0; padding: 20px; color: #1e293b; }
+        .container { max-width: 1250px; margin: auto; }
+        
+        .config-card { background: var(--panel); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 20px; text-align: center; }
+        .grid-config { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 800px; margin: 15px auto; }
+        
+        .main-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .panel { background: var(--panel); padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border-top: 5px solid var(--primary); }
+        .panel.decrypt { border-top-color: var(--accent); }
+        
+        h2 { margin-top: 0; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; color: #0f172a; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.85rem; color: #64748b; }
+        input, textarea { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-family: monospace; font-size: 0.9rem; margin-bottom: 12px; }
+        
+        .btn-action { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; margin-bottom: 20px; font-size: 1rem; }
+        .btn-encrypt { background: var(--primary); }
+        .btn-decrypt { background: var(--accent); }
+        
+        .output-group { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; margin-bottom: 10px; }
+        /* Cập nhật result-text để hỗ trợ xuống dòng */
+        .result-text { 
+            word-break: break-all; 
+            font-family: monospace; 
+            font-size: 0.85rem; 
+            min-height: 20px; 
+            margin-bottom: 10px; 
+            display: block; 
+            color: #334155; 
+            padding: 8px; 
+            background: #fff; 
+            border: 1px solid #f1f5f9; 
+            border-radius: 4px;
+            white-space: pre-wrap; /* Quan trọng: Giúp nhận diện dấu xuống dòng */
+        }
+        
+        .btn-copy { background: var(--success); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; transition: 0.2s; }
+        .btn-copy:hover { opacity: 0.8; }
+        
+        .toast { font-size: 0.75rem; font-weight: bold; color: var(--success); display: none; margin-left: 8px; }
+        
+        @media (max-width: 900px) { .main-layout { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>Công cụ tạo Payload AES-256-CBC</h2>
-    <p style="font-size: 0.85rem; color: #64748b; text-align: center; margin-bottom: 20px;">
-        Mã hóa chuẩn AES-256-CBC với PKCS7 padding, Base64 URL-safe.
-    </p>
-
-    <div class="field">
-        <label>Chuỗi truy vấn Plaintext:</label>
-        <textarea id="dataInput" rows="3" placeholder="uid=688665...&server_id=3311..."></textarea>
-    </div>
-
-    <div class="grid">
-        <div class="field">
-            <label>Khóa bí mật (32 ký tự):</label>
-            <input type="text" id="key" value="" placeholder="Nhập Secret Key...">
-        </div>
-        <div class="field">
-            <label>Vector khởi tạo (16 ký tự - IV):</label>
-            <input type="text" id="iv" value="" placeholder="Nhập IV...">
+<div class="container">
+    <div class="config-card">
+        <h1 style="font-size: 1.4rem; margin: 0;">AES-256-CBC Control Center</h1>
+        <div class="grid-config">
+            <div style="text-align: left;">
+                <label>Secret Key (32 chars):</label>
+                <input type="text" id="shared_key" placeholder="Nhập Key của bạn...">
+            </div>
+            <div style="text-align: left;">
+                <label>IV (16 chars):</label>
+                <input type="text" id="shared_iv" placeholder="Nhập IV của bạn...">
+            </div>
         </div>
     </div>
 
-    <div class="field">
-        <label>Base URL:</label>
-        <input type="text" id="baseUrl" value="https://game.oeg.vn/payment/vung-dat-anh-hung">
-    </div>
+    <div class="main-layout">
+        <div class="panel">
+            <h2>Mã hóa (Encrypt)</h2>
+            <label>1. Plaintext Data:</label>
+            <textarea id="en_input" rows="3" placeholder="uid=123&action=pay..."></textarea>
+            
+            <label>2. Base URL:</label>
+            <input type="text" id="baseUrl" value="https://game.oeg.vn/payment/vung-dat-anh-hung">
+            
+            <button class="btn-action btn-encrypt" onclick="doEncrypt()">THỰC HIỆN MÃ HÓA</button>
+            
+            <div class="output-group">
+                <label>Mã Payload (Base64 URL-safe):</label>
+                <span id="res_payload" class="result-text"></span>
+                <button class="btn-copy" onclick="copy('res_payload', 't1')">Copy Payload Only</button>
+                <span id="t1" class="toast">✓ Đã copy mã!</span>
+            </div>
 
-    <button class="btn-main" onclick="process()">Tạo Payload Mã hóa</button>
+            <div class="output-group">
+                <label>URL Hoàn chỉnh:</label>
+                <span id="res_url" class="result-text"></span>
+                <button class="btn-copy" onclick="copy('res_url', 't2')">Copy Full URL</button>
+                <span id="t2" class="toast">✓ Đã copy link!</span>
+            </div>
+        </div>
 
-    <div class="output-box">
-        <label>Payload mã hóa Base64 URL-safe:</label>
-        <div id="payloadOut" class="result-area"></div>
-        <button class="btn-copy" onclick="copy('payloadOut', 't1')">Sao chép Payload</button>
-        <span id="t1" class="toast">✓ Đã chép!</span>
-
-        <label style="margin-top:20px; display:block;">URL Hoàn chỉnh:</label>
-        <div id="urlOut" class="result-area"></div>
-        <button class="btn-copy" onclick="copy('urlOut', 't2')">Sao chép Full URL</button>
-        <span id="t2" class="toast">✓ Đã chép!</span>
+        <div class="panel decrypt">
+            <h2>Giải mã (Decrypt)</h2>
+            <label>Nhập URL hoặc Payload cần giải mã:</label>
+            <textarea id="de_input" rows="6" placeholder="Dán link hoặc payload..."></textarea>
+            
+            <button class="btn-action btn-decrypt" onclick="doDecrypt()">THỰC HIỆN GIẢI MÃ</button>
+            
+            <div class="output-group" style="border-left: 4px solid var(--accent);">
+                <label>Kết quả Plaintext (Đã tách dòng):</label>
+                <span id="res_plain" class="result-text" style="color: #1e40af; font-weight: bold; background: #f0f7ff;"></span>
+                <button class="btn-copy" onclick="copy('res_plain', 't3')">Copy Kết quả</button>
+                <span id="t3" class="toast">✓ Đã copy!</span>
+            </div>
+        </div>
     </div>
 </div>
 
 <script>
-    function toUrlSafe(base64) {
-        return base64
-            .replace(/\+/g, '-') // Thay + bằng -
-            .replace(/\//g, '_') // Thay / bằng _
-            .replace(/=+$/, '');  // Loại bỏ dấu = ở cuối
+    const toSafe = (b64) => b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    const fromSafe = (safe) => {
+        let b64 = safe.replace(/-/g, '+').replace(/_/g, '/');
+        while (b64.length % 4) b64 += '=';
+        return b64;
+    };
+
+    function getParams() {
+        const k = document.getElementById('shared_key').value;
+        const i = document.getElementById('shared_iv').value;
+        if (!k || !i) { alert("Hãy nhập Key và IV ở khung phía trên!"); return null; }
+        return { key: CryptoJS.enc.Utf8.parse(k), iv: CryptoJS.enc.Utf8.parse(i) };
     }
 
-    function process() {
-        const data = document.getElementById('dataInput').value;
-        const keyStr = document.getElementById('key').value;
-        const ivStr = document.getElementById('iv').value;
-        const baseUrl = document.getElementById('baseUrl').value.trim();
+    function doEncrypt() {
+        const p = getParams(); if (!p) return;
+        const text = document.getElementById('en_input').value.trim();
+        const base = document.getElementById('baseUrl').value;
 
-        if (!keyStr || !ivStr) {
-            alert("Vui lòng điền đầy đủ Key và IV!");
-            return;
+        try {
+            const encrypted = CryptoJS.AES.encrypt(text, p.key, {
+                iv: p.iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7
+            });
+            const safePayload = toSafe(encrypted.toString());
+            const sep = base.includes('?') ? '&' : '?';
+            
+            document.getElementById('res_payload').innerText = safePayload;
+            document.getElementById('res_url').innerText = `${base}${sep}payload=${safePayload}`;
+        } catch (e) { alert("Lỗi mã hóa dữ liệu!"); }
+    }
+
+    function doDecrypt() {
+        const p = getParams(); if (!p) return;
+        let input = document.getElementById('de_input').value.trim();
+
+        if (input.includes('payload=')) {
+            input = input.split('payload=')[1].split('&')[0];
         }
 
         try {
-            const key = CryptoJS.enc.Utf8.parse(keyStr);
-            const iv = CryptoJS.enc.Utf8.parse(ivStr);
-
-            const encrypted = CryptoJS.AES.encrypt(data, key, {
-                iv: iv,
-                mode: CryptoJS.mode.CBC,
-                padding: CryptoJS.pad.Pkcs7
+            const standardB64 = fromSafe(input);
+            const decrypted = CryptoJS.AES.decrypt(standardB64, p.key, {
+                iv: p.iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7
             });
-
-            // Lấy Base64 gốc
-            const rawBase64 = encrypted.toString();
+            const plain = decrypted.toString(CryptoJS.enc.Utf8);
             
-            // Chuyển sang URL-safe để không bị ký tự % trong URL
-            const urlSafePayload = toUrlSafe(rawBase64);
-            
-            document.getElementById('payloadOut').innerText = urlSafePayload;
-
-            // Ghép URL (không dùng encodeURIComponent nữa vì payload đã safe)
-            const sep = baseUrl.includes('?') ? '&' : '?';
-            document.getElementById('urlOut').innerText = `${baseUrl}${sep}payload=${urlSafePayload}`;
-
-        } catch (e) {
-            alert("Lỗi xử lý: " + e.message);
-        }
+            if (plain) {
+                // THAY THẾ DẤU & THÀNH XUỐNG DÒNG (\n)
+                const formattedPlain = plain.replace(/&/g, '\n');
+                document.getElementById('res_plain').innerText = formattedPlain;
+            } else {
+                document.getElementById('res_plain').innerText = "LỖI: Key/IV sai hoặc Payload hỏng!";
+            }
+        } catch (e) { document.getElementById('res_plain').innerText = "LỖI: Giải mã thất bại!"; }
     }
 
     function copy(id, toastId) {
         const text = document.getElementById(id).innerText;
-        if (!text) return;
+        if (!text || text.includes("LỖI")) return;
         navigator.clipboard.writeText(text).then(() => {
-            const t = document.getElementById(toastId);
-            t.style.display = 'inline';
-            setTimeout(() => t.style.display = 'none', 2000);
+            const toast = document.getElementById(toastId);
+            toast.style.display = 'inline';
+            setTimeout(() => toast.style.display = 'none', 2000);
         });
     }
 </script>
